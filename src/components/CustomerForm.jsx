@@ -1,10 +1,7 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { GlobalContext } from "../context/GlobalContext";
-import { createCustomer, updateCustomer } from "../api/api";
 
-function CustomerForm({ currentCustomer, setCurrentCustomer }) {
-  const { dispatch } = useContext(GlobalContext);
+function CustomerForm({ currentCustomer, setCurrentCustomer, onSubmit }) {
   const [customer, setCustomer] = useState({
     name: "",
     email: "",
@@ -22,21 +19,13 @@ function CustomerForm({ currentCustomer, setCurrentCustomer }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (currentCustomer) {
-      const updated = await updateCustomer(currentCustomer._id, customer);
-      dispatch({
-        type: "UPDATE_CUSTOMER",
-        payload: updated.data.data.customer,
-      });
+    if (typeof onSubmit === "function") {
+      await onSubmit(customer);
+      setCurrentCustomer(null);
+      setCustomer({ name: "", email: "" });
     } else {
-      const newCustomer = await createCustomer(customer);
-      dispatch({
-        type: "ADD_CUSTOMER",
-        payload: newCustomer.data.data.customer,
-      });
+      console.error("onSubmit is not a function");
     }
-    setCurrentCustomer(null);
-    setCustomer({ name: "", email: "" });
   };
 
   return (
@@ -68,6 +57,7 @@ function CustomerForm({ currentCustomer, setCurrentCustomer }) {
         <input
           id="email"
           name="email"
+          type="email"
           value={customer.email}
           onChange={handleChange}
           placeholder="Email"
@@ -92,6 +82,7 @@ CustomerForm.propTypes = {
     email: PropTypes.string,
   }),
   setCurrentCustomer: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
 };
 
 export default CustomerForm;

@@ -8,17 +8,27 @@ function CustomerList({ setCurrentCustomer }) {
   const { state, dispatch } = useContext(GlobalContext);
 
   useEffect(() => {
-    fetchCustomers().then((response) => {
-      dispatch({
-        type: "SET_CUSTOMERS",
-        payload: response.data.data.customers,
-      });
-    });
+    const getCustomers = async () => {
+      try {
+        const response = await fetchCustomers();
+        dispatch({
+          type: "SET_CUSTOMERS",
+          payload: response.data.data.customers,
+        });
+      } catch (error) {
+        console.error("Failed to fetch customers", error);
+      }
+    };
+    getCustomers();
   }, [dispatch]);
 
   const handleDelete = async (id) => {
-    await deleteCustomer(id);
-    dispatch({ type: "REMOVE_CUSTOMER", payload: id });
+    try {
+      await deleteCustomer(id);
+      dispatch({ type: "REMOVE_CUSTOMER", payload: id });
+    } catch (error) {
+      console.error("Failed to delete customer", error);
+    }
   };
 
   if (!Array.isArray(state.customers)) {
